@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<head th:replace="~{fragments/layout :: head('Investigation')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main id="main">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <section th:replace="~{fragments/layout :: caseHeader}"></section>
+
+    <section class="card" aria-labelledby="run-h">
+        <h2 id="run-h">Run investigation</h2>
+        <form th:action="@{/ui/cases/{id}/investigate(id=${c.caseId})}" method="post" class="inline-form" data-loading-form
+              sec:authorize="hasAnyRole('INVESTIGATOR','LEAD')" th:if="${canInvestigate}">
+            <label for="mode">Processor</label>
+            <select id="mode" name="mode">
+                <option value="" th:text="'Configured (' + ${configuredMode} + ')'">configured</option>
+                <option th:each="m : ${modes}" th:value="${m.key}" th:text="${m.key} + (${m.available} ? '' : ' — unavailable, will fall back')">mode</option>
+            </select>
+            <button type="submit" class="primary" th:text="${c.currentRun == 0} ? 'Start investigation' : 'Re-run investigation'">Start</button>
+            <span class="loading" role="status" aria-live="polite" hidden>Running tools, retrieval and analysis…</span>
+        </form>
+        <p th:unless="${canInvestigate}" class="hint" th:text="'Investigation is not available while the case is ' + ${c.status} + '.'"></p>
+    </section>
+
+    <section class="card" aria-labelledby="plan-h">
+        <h2 id="plan-h">Bounded investigation plan</h2>
+        <p class="hint">Selected by the application from the validated case type (max 8 steps). Only allow-listed, read-only tools.</p>
+        <ol class="plan">
+            <li th:each="s : ${plan}"><code th:text="${s.toolName}">tool</code> — <span th:text="${s.purpose}">purpose</span></li>
+        </ol>
+    </section>
+
+    <section class="card" aria-labelledby="trace-h">
+        <h2 id="trace-h">Tool execution trace</h2>
+        <p class="hint">Operational trace only (no hidden reasoning). Summaries are redacted; arguments are stored as a hash.</p>
+        <p th:if="${#lists.isEmpty(traces)}" class="empty">No tools have run yet. Start the investigation to collect evidence.</p>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(traces)}">
+            <table>
+                <caption class="sr-only">Tool calls for the latest run</caption>
+                <thead><tr><th scope="col">Trace</th><th scope="col">Tool</th><th scope="col">Status</th><th scope="col">Duration</th>
+                    <th scope="col">Result summary</th><th scope="col">Origin</th><th scope="col">Request hash</th></tr></thead>
+                <tbody>
+                <tr th:each="tr : ${traces}" th:id="${tr.traceId}">
+                    <td><code th:text="${tr.traceId}">TR</code></td>
+                    <td th:text="${tr.toolName}">tool</td>
+                    <td><span class="tool-status" th:classappend="'ts-' + ${#strings.toLowerCase(tr.status)}" th:text="${tr.status}">OK</span></td>
+                    <td th:text="${tr.durationMs} + ' ms'">ms</td>
+                    <td th:text="${tr.resultSummary}">summary</td>
+                    <td th:text="${tr.origin}">origin</td>
+                    <td><code th:text="${tr.requestHash}">hash</code></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

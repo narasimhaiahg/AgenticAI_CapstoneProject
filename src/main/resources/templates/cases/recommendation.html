@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Recommendation')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main id="main">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <section th:replace="~{fragments/layout :: caseHeader}"></section>
+
+    <section th:if="${rec == null}" class="card">
+        <p class="empty">No validated recommendation yet. Run the investigation first.</p>
+    </section>
+
+    <section class="card" th:if="${rec != null}" aria-labelledby="rec-h">
+        <h2 id="rec-h">Structured recommendation <span class="badge">advisory — human review required</span></h2>
+        <dl class="facts rec-facts">
+            <div><dt>ID / mode</dt><dd th:text="${rec.recommendationId} + ' · ' + ${rec.mode}">id</dd></div>
+            <div><dt>Classification</dt><dd th:text="${rec.classification}">cls</dd></div>
+            <div><dt>Risk</dt><dd><span class="sev" th:classappend="'sev-' + ${#strings.toLowerCase(rec.riskLevel)}" th:text="${rec.riskLevel}">r</span></dd></div>
+            <div><dt>Recommended route</dt><dd th:text="${rec.route}">route</dd></div>
+            <div><dt>Confidence</dt><dd th:text="${#numbers.formatDecimal(rec.confidence,1,2,'POINT')}">conf</dd></div>
+            <div><dt>Human review</dt><dd th:text="${rec.humanReviewRequired} ? 'Required' : 'Not required (invalid)'">hr</dd></div>
+            <div th:if="${rec.priority != null}"><dt>SLA</dt><dd th:text="${rec.priority} + ' · target ' + ${#temporals.format(rec.slaTargetAt,'yyyy-MM-dd HH:mm')} + ' UTC'">sla</dd></div>
+            <div th:if="${rec.fallbackReason != null}"><dt>Fallback</dt><dd th:text="${rec.requestedMode} + ' failed → ' + ${rec.mode} + ': ' + ${rec.fallbackReason}">fb</dd></div>
+        </dl>
+        <div class="rationale"><strong>Rationale:</strong> <span th:text="${rec.rationale}">r</span></div>
+
+        <h3>Supporting evidence</h3>
+        <ul class="evidence">
+            <li th:each="id : ${rec.evidenceIds}" th:with="e=${evidenceById.get(id)}">
+                <code th:text="${id}">EV</code>
+                <span th:if="${e != null}"><span class="sev" th:classappend="'sev-' + ${#strings.toLowerCase(e.severity)}" th:text="${e.severity}">s</span>
+                    <a th:href="'/ui/cases/' + ${c.caseId} + '/evidence'" th:text="${e.type} + ' — ' + ${e.valueSummary}">ev</a></span>
+            </li>
+            <li th:if="${#lists.isEmpty(rec.evidenceIds)}" class="empty">No evidence referenced.</li>
+        </ul>
+
+        <h3>Policy citations</h3>
+        <ul class="evidence">
+            <li th:each="p : ${cited}">
+                <code th:text="${p.chunkId}">chunk</code>
+                <a th:href="'/ui/cases/' + ${c.caseId} + '/citations#' + ${p.chunkId}"
+                   th:text="${p.documentId} + ' v' + ${p.version} + ' §' + ${p.section} + ' (score ' + ${#numbers.formatDecimal(p.score,1,2,'POINT')} + ')'">cit</a>
+            </li>
+            <li th:if="${#lists.isEmpty(cited)}" class="empty"
+                th:text="${rec.retrievalAbstained} ? 'Abstained: no policy passage met the retrieval threshold.' : 'No policy citations.'">none</li>
+        </ul>
+
+        <h3>Missing information</h3>
+        <ul class="evidence">
+            <li th:each="m : ${rec.missingInformation}" th:text="${m}">m</li>
+            <li th:if="${#lists.isEmpty(rec.missingInformation)}" class="empty">None recorded.</li>
+        </ul>
+        <p th:unless="${#lists.isEmpty(rec.contradictions)}"><strong>Contradictions:</strong>
+            <span th:each="x : ${rec.contradictions}" th:text="${x} + ' '">x</span></p>
+        <p th:unless="${#lists.isEmpty(rec.ruleIds)}" class="hint">Deterministic rule IDs:
+            <code th:text="${#strings.listJoin(rec.ruleIds, ', ')}">rules</code></p>
+        <p th:unless="${#lists.isEmpty(rec.toolTraceIds)}" class="hint">Tool traces referenced:
+            <code th:text="${#strings.listJoin(rec.toolTraceIds, ', ')}">traces</code></p>
+    </section>
+
+    <section class="card" th:if="${#lists.size(history) > 1}" aria-labelledby="hist-h">
+        <h2 id="hist-h">Run history</h2>
+        <ul class="evidence"><li th:each="r : ${history}"
+            th:text="${r.recommendationId} + ' · run ' + ${r.runNumber} + ' · ' + ${r.mode} + ' · ' + ${r.classification} + ' → ' + ${r.route}">h</li></ul>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,30 @@
+# Copy to application-local.yml and adjust. NEVER commit real secrets — use env vars.
+server:
+  port: 8080
+spring:
+  datasource:
+    url: ${CAPSTONE_DB_URL:jdbc:mysql://localhost:3306/fraudcase_db}
+    username: ${CAPSTONE_DB_USER:capstone}
+    password: ${CAPSTONE_DB_PASSWORD:capstone-dev}
+capstone:
+  processor-mode: ${CAPSTONE_PROCESSOR_MODE:rules}
+  allow-mode-override: true
+  retrieval:
+    top-k: 4
+    similarity-threshold: 0.18
+    policy-location: classpath*:policies/*.md
+  memory:
+    max-messages: 12
+  tools:
+    timeout-ms: 2500
+    deterministic-seed: fraud-training-v1
+    simulated-slow-ms: 4000
+  ai:
+    base-url: ${CAPSTONE_AI_BASE_URL:https://api.openai.com}
+    api-key: ${CAPSTONE_AI_API_KEY:}        # required only for spring-ai / langchain4j modes
+    model: ${CAPSTONE_AI_MODEL:gpt-4o-mini}
+    temperature: 0.0
+    timeout-ms: 20000
+    fallback-to-rules: true
+  security:
+    demo-password: ${CAPSTONE_DEMO_PASSWORD:}   # shared password for the five demo users

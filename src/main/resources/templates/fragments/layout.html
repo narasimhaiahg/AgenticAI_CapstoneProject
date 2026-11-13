@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' · Fraud Investigation Assistant'">Fraud Investigation Assistant</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<header th:fragment="header" class="topbar">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <div class="brand">
+        <a th:href="@{/ui/cases}">Fraud &amp; Dispute Investigation Assistant</a>
+        <span class="badge badge-synthetic">SYNTHETIC TRAINING DATA</span>
+    </div>
+    <nav aria-label="Primary">
+        <a th:href="@{/ui/cases}">Cases</a>
+        <a th:href="@{/ui/cases/new}" sec:authorize="hasAnyRole('AGENT','INVESTIGATOR','LEAD')">New case</a>
+        <a th:href="@{/ui/policies}">Policies</a>
+        <span class="mode" th:text="'Processor: ' + ${configuredMode}">Processor: rules</span>
+        <span class="user" sec:authentication="name">user</span>
+        <form th:action="@{/logout}" method="post" class="inline"><button type="submit" class="link-button">Sign out</button></form>
+    </nav>
+</header>
+
+<div th:fragment="flash">
+    <div th:if="${notice}" class="alert alert-info" role="status" th:text="${notice}">notice</div>
+    <div th:if="${error}" class="alert alert-error" role="alert" th:text="${error}">error</div>
+</div>
+
+<section th:fragment="caseHeader" class="case-header" aria-label="Case summary">
+    <div class="case-title">
+        <h1 th:text="${c.caseId}">CASE</h1>
+        <span class="status" th:classappend="'status-' + ${#strings.toLowerCase(c.status)}" th:text="'Status: ' + ${c.status}">Status</span>
+        <span th:if="${c.assignedRoute}" class="badge" th:text="'Routed to ' + ${c.assignedRoute}">route</span>
+    </div>
+    <dl class="facts">
+        <div><dt>Customer</dt><dd th:text="${c.maskedCustomerRef} + ' (' + ${c.homeRegion} + ')'">ref</dd></div>
+        <div><dt>Transaction</dt><dd th:text="${t.transactionRef}">txn</dd></div>
+        <div><dt>Amount</dt><dd th:text="${#numbers.formatDecimal(t.amount, 1, 'COMMA', 2, 'POINT')} + ' ' + ${t.currency}">amount</dd></div>
+        <div><dt>Channel / status</dt><dd th:text="${t.transactionChannel} + ' / ' + ${t.transactionStatus}">channel</dd></div>
+        <div><dt>Merchant</dt><dd th:text="${t.maskedMerchant}">merchant</dd></div>
+        <div><dt>Issue</dt><dd th:text="${t.issueType}">issue</dd></div>
+        <div><dt>Run</dt><dd th:text="${c.currentRun}">0</dd></div>
+    </dl>
+    <nav class="tabs" aria-label="Case sections">
+        <a th:href="@{/ui/cases/{id}/investigation(id=${c.caseId})}" th:attr="aria-current=${tab == 'investigation'} ? 'page' : null">Investigation &amp; tools</a>
+        <a th:href="@{/ui/cases/{id}/evidence(id=${c.caseId})}" th:attr="aria-current=${tab == 'evidence'} ? 'page' : null">Evidence</a>
+        <a th:href="@{/ui/cases/{id}/recommendation(id=${c.caseId})}" th:attr="aria-current=${tab == 'recommendation'} ? 'page' : null">Recommendation</a>
+        <a th:href="@{/ui/cases/{id}/citations(id=${c.caseId})}" th:attr="aria-current=${tab == 'citations'} ? 'page' : null">Policy citations</a>
+        <a th:href="@{/ui/cases/{id}/review(id=${c.caseId})}" th:attr="aria-current=${tab == 'review'} ? 'page' : null">Human review</a>
+        <a th:href="@{/ui/cases/{id}/conversation(id=${c.caseId})}" th:attr="aria-current=${tab == 'conversation'} ? 'page' : null">Follow-up</a>
+        <a th:href="@{/ui/cases/{id}/audit(id=${c.caseId})}" th:attr="aria-current=${tab == 'audit'} ? 'page' : null"
+           sec:authorize="hasAnyRole('AUDITOR','LEAD','REVIEWER')">Audit trail</a>
+    </nav>
+</section>
+
+<footer th:fragment="footer" class="footer">
+    Advisory assistant only. It never blocks cards, issues refunds, moves funds, files reports or contacts customers.
+    Every recommendation requires a human reviewer disposition.
+</footer>
+</body>
+</html>

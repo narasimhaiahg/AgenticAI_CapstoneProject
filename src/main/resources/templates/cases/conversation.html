@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<head th:replace="~{fragments/layout :: head('Follow-up')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main id="main">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <section th:replace="~{fragments/layout :: caseHeader}"></section>
+    <section class="card">
+        <h2>Case-scoped follow-up</h2>
+        <p class="hint">Answers come from this case's recorded facts, evidence, citations and recommendation only — memory is
+            isolated by case ID and bounded. Answers never change the recommendation.</p>
+        <ul class="chat" aria-live="polite">
+            <li th:if="${#lists.isEmpty(messages)}" class="empty">No questions yet.</li>
+            <li th:each="m : ${messages}" th:classappend="${m.role == 'USER'} ? 'chat-user' : 'chat-assistant'">
+                <span class="meta" th:text="${m.role} + ' · ' + ${#temporals.format(m.createdAt,'HH:mm:ss')} + (${m.mode != null ? m.mode : ''})">meta</span>
+                <p th:text="${m.text}">msg</p>
+            </li>
+        </ul>
+        <form th:action="@{/ui/cases/{id}/conversation(id=${c.caseId})}" method="post" class="inline-form" data-loading-form
+              sec:authorize="hasAnyRole('INVESTIGATOR','REVIEWER','LEAD')">
+            <label for="question">Question (max 500 characters)</label>
+            <input id="question" name="question" maxlength="500" required autocomplete="off"
+                   placeholder="e.g. Which evidence supports the route?">
+            <button type="submit" class="primary">Ask</button>
+            <span class="loading" role="status" aria-live="polite" hidden>Answering…</span>
+        </form>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
