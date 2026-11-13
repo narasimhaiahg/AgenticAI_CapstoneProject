@@ -12,7 +12,7 @@
   embeddings use ~0.72.
 - Spring AI / LangChain4j adapters compile and wire but were not exercised against a live model in
   this environment (no API key); contract + fallback paths are tested instead.
-- H2 for demo; production would want Postgres + per-user credentials.
+- MySQL 8 via docker compose for demo (tests on in-memory H2); production would want managed MySQL + per-user credentials.
 - The rules engine is a deterministic baseline — coverage mirrors the fixture scenarios, not all
   fraud typologies.
 - UI is functional Thymeleaf, not a SPA; screenshots in docs/screenshots.

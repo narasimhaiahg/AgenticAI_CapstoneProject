@@ -2,6 +2,8 @@ package com.capstone.fraudcase.persistence;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Year;
@@ -42,11 +44,15 @@ public class IdGenerator {
         return next("audit_seq");
     }
 
-    private long next(String sequence) {
-        Long v = jdbc.queryForObject("SELECT NEXT VALUE FOR " + sequence, Long.class);
+    @Transactional(propagation = Propagation.REQUIRED)
+    public long next(String sequence) {
+        // Row-locked counter — portable across MySQL and H2 (no vendor SEQUENCE objects).
+        Long v = jdbc.queryForObject("SELECT next_val FROM id_sequence WHERE name = ? FOR UPDATE",
+                Long.class, sequence);
         if (v == null) {
             throw new IllegalStateException("Sequence " + sequence + " returned no value");
         }
+        jdbc.update("UPDATE id_sequence SET next_val = ? WHERE name = ?", v + 1, sequence);
         return v;
     }
 }

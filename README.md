@@ -9,14 +9,19 @@ funds, files a report or contacts a customer.**
 
 Java 17 · Spring Boot 3.4.5 · Spring AI 1.0.1 & LangChain4j 1.0.1 (adapters, `spring-ai` /
 `langchain4j` profiles) · deterministic rules engine · local TF-IDF embeddings (no API key needed
-for RAG) · Spring Data JPA + Flyway + H2 · Thymeleaf UI · Spring Security.
+for RAG) · Spring Data JPA + Flyway + MySQL 8 · Thymeleaf UI · Spring Security.
 
 ## Quick start
 
 ```bash
+docker compose up -d   # MySQL 8 on localhost:3306, database fraudcase_db
 mvn package
 java -jar target/fraud-investigation-agent-1.0.0-SNAPSHOT.jar
 ```
+
+DB defaults: `jdbc:mysql://localhost:3306/fraudcase_db`, user `capstone`, password `capstone-dev`
+(override with `CAPSTONE_DB_URL` / `CAPSTONE_DB_USER` / `CAPSTONE_DB_PASSWORD`). Flyway creates the
+schema on first run. `mvn test` needs no MySQL — tests run on in-memory H2.
 
 Open http://localhost:8080 → login. Demo users (password = `CAPSTONE_DEMO_PASSWORD`; if unset a
 random one is generated and logged at startup):

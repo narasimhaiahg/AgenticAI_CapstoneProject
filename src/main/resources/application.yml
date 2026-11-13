@@ -2,9 +2,9 @@ spring:
   application:
     name: fraud-investigation-agent
   datasource:
-    url: ${CAPSTONE_DB_URL:jdbc:h2:file:./data/fraudcase-db;MODE=LEGACY}
-    username: ${CAPSTONE_DB_USER:sa}
-    password: ${CAPSTONE_DB_PASSWORD:}
+    url: ${CAPSTONE_DB_URL:jdbc:mysql://localhost:3306/fraudcase_db}
+    username: ${CAPSTONE_DB_USER:capstone}
+    password: ${CAPSTONE_DB_PASSWORD:capstone-dev}
   jpa:
     open-in-view: false
     hibernate:

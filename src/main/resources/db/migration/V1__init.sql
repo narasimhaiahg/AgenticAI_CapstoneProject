@@ -1,10 +1,13 @@
 -- Fraud investigation capstone schema (synthetic training data only).
-CREATE SEQUENCE case_seq START WITH 42;
-CREATE SEQUENCE evidence_seq START WITH 101;
-CREATE SEQUENCE trace_seq START WITH 118;
-CREATE SEQUENCE recommendation_seq START WITH 1;
-CREATE SEQUENCE review_seq START WITH 1;
-CREATE SEQUENCE audit_seq START WITH 1;
+-- Portable across MySQL 8 and H2: no vendor sequences; counters live in id_sequence
+-- and are claimed under SELECT ... FOR UPDATE by IdGenerator.
+CREATE TABLE id_sequence (
+    name                  VARCHAR(32)  PRIMARY KEY,
+    next_val              BIGINT       NOT NULL
+);
+INSERT INTO id_sequence (name, next_val) VALUES
+    ('case_seq', 42), ('evidence_seq', 101), ('trace_seq', 118),
+    ('recommendation_seq', 1), ('review_seq', 1), ('audit_seq', 1);
 
 CREATE TABLE fraud_case (
     case_id               VARCHAR(32)  PRIMARY KEY,
@@ -12,13 +15,13 @@ CREATE TABLE fraud_case (
     home_region           VARCHAR(16)  NOT NULL,
     status                VARCHAR(24)  NOT NULL,
     intake_channel        VARCHAR(24)  NOT NULL,
-    reported_at           TIMESTAMP WITH TIME ZONE NOT NULL,
+    reported_at           TIMESTAMP(6) NOT NULL,
     created_by            VARCHAR(64)  NOT NULL,
     synthetic_confirmed   BOOLEAN      NOT NULL,
     review_required       BOOLEAN      NOT NULL,
     current_run           INT          NOT NULL DEFAULT 0,
     assigned_route        VARCHAR(32),
-    updated_at            TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at            TIMESTAMP(6) NOT NULL,
     row_version           BIGINT       NOT NULL DEFAULT 0
 );
 
@@ -28,7 +31,7 @@ CREATE TABLE transaction_claim (
     transaction_ref       VARCHAR(40)  NOT NULL,
     amount                DECIMAL(15,2) NOT NULL,
     currency              VARCHAR(3)   NOT NULL,
-    occurred_at           TIMESTAMP WITH TIME ZONE NOT NULL,
+    occurred_at           TIMESTAMP(6) NOT NULL,
     transaction_status    VARCHAR(16)  NOT NULL,
     transaction_channel   VARCHAR(24)  NOT NULL,
     masked_merchant       VARCHAR(64)  NOT NULL,
@@ -50,7 +53,7 @@ CREATE TABLE evidence_item (
     value_summary         VARCHAR(500) NOT NULL,
     provenance            VARCHAR(24)  NOT NULL,
     source_ref            VARCHAR(40)  NOT NULL,
-    observed_at           TIMESTAMP WITH TIME ZONE NOT NULL
+    observed_at           TIMESTAMP(6) NOT NULL
 );
 CREATE INDEX ix_evidence_case ON evidence_item(case_id, run_number);
 
@@ -66,7 +69,7 @@ CREATE TABLE tool_trace (
     result_summary        VARCHAR(500) NOT NULL,
     result_json           VARCHAR(4000),
     origin                VARCHAR(24)  NOT NULL,
-    started_at            TIMESTAMP WITH TIME ZONE NOT NULL
+    started_at            TIMESTAMP(6) NOT NULL
 );
 CREATE INDEX ix_trace_case ON tool_trace(case_id, run_number);
 
@@ -91,12 +94,12 @@ CREATE TABLE recommendation (
     tool_trace_ids        VARCHAR(1000) NOT NULL,
     input_facts           VARCHAR(4000) NOT NULL,
     priority              VARCHAR(4),
-    sla_target_at         TIMESTAMP WITH TIME ZONE,
+    sla_target_at         TIMESTAMP(6),
     sla_trace_id          VARCHAR(24),
     retrieval_query       VARCHAR(1000),
     retrieval_best_score  DOUBLE PRECISION,
     retrieval_abstained   BOOLEAN      NOT NULL,
-    created_at            TIMESTAMP WITH TIME ZONE NOT NULL
+    created_at            TIMESTAMP(6) NOT NULL
 );
 CREATE INDEX ix_recommendation_case ON recommendation(case_id, run_number);
 
@@ -129,7 +132,7 @@ CREATE TABLE review_disposition (
     missing_info_acknowledged BOOLEAN  NOT NULL,
     from_status           VARCHAR(24)  NOT NULL,
     to_status             VARCHAR(24)  NOT NULL,
-    recorded_at           TIMESTAMP WITH TIME ZONE NOT NULL
+    recorded_at           TIMESTAMP(6) NOT NULL
 );
 
 CREATE TABLE audit_event (
@@ -143,7 +146,7 @@ CREATE TABLE audit_event (
     summary               VARCHAR(500) NOT NULL,
     payload_hash          VARCHAR(64)  NOT NULL,
     previous_hash         VARCHAR(64)  NOT NULL,
-    recorded_at           TIMESTAMP WITH TIME ZONE NOT NULL
+    recorded_at           TIMESTAMP(6) NOT NULL
 );
 CREATE INDEX ix_audit_case ON audit_event(case_id, sequence_no);
 
@@ -153,6 +156,6 @@ CREATE TABLE case_message (
     role                  VARCHAR(16)  NOT NULL,
     message_text          VARCHAR(4000) NOT NULL,
     mode                  VARCHAR(16),
-    created_at            TIMESTAMP WITH TIME ZONE NOT NULL
+    created_at            TIMESTAMP(6) NOT NULL
 );
 CREATE INDEX ix_message_case ON case_message(case_id, id);
