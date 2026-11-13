@@ -1,0 +1,83 @@
+spring:
+  application:
+    name: fraud-investigation-agent
+  datasource:
+    url: ${CAPSTONE_DB_URL:jdbc:h2:file:./data/fraudcase-db;MODE=LEGACY}
+    username: ${CAPSTONE_DB_USER:sa}
+    password: ${CAPSTONE_DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+  thymeleaf:
+    cache: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-exception: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+
+logging:
+  pattern:
+    level: "%5p [cid=%X{correlationId:-} rid=%X{requestId:-}]"
+
+capstone:
+  processor-mode: ${CAPSTONE_PROCESSOR_MODE:rules}   # rules | spring-ai | langchain4j
+  human-review-required: true
+  allow-financial-actions: false
+  allow-customer-contact: false
+  allow-mode-override: true
+  retrieval:
+    top-k: 4
+    # Calibrated for the local TF-IDF embedding (cosine scores are lower than provider embeddings;
+    # use ~0.72 with a provider embedding model).
+    similarity-threshold: 0.18
+    policy-location: classpath*:policies/*.md
+  memory:
+    max-messages: 12
+  tools:
+    timeout-ms: 2500
+    deterministic-seed: fraud-training-v1
+    simulated-slow-ms: 4000
+  ai:
+    base-url: ${CAPSTONE_AI_BASE_URL:https://api.openai.com}
+    api-key: ${CAPSTONE_AI_API_KEY:}
+    model: ${CAPSTONE_AI_MODEL:gpt-4o-mini}
+    temperature: 0.0
+    timeout-ms: 20000
+    fallback-to-rules: true
+  security:
+    demo-password: ${CAPSTONE_DEMO_PASSWORD:}
+    users:
+      - username: agent
+        roles: [AGENT]
+      - username: investigator
+        roles: [INVESTIGATOR]
+      - username: reviewer
+        roles: [REVIEWER]
+      - username: lead
+        roles: [LEAD, REVIEWER, INVESTIGATOR, AUDITOR]
+      - username: auditor
+        roles: [AUDITOR]

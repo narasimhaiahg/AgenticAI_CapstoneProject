@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Evidence')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main id="main">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <section th:replace="~{fragments/layout :: caseHeader}"></section>
+    <p class="hint">Provenance is shown for every item: customer claims, tool-observed evidence and system flags are separated.</p>
+
+    <section class="card" aria-labelledby="claims-h">
+        <h2 id="claims-h">Customer claims</h2>
+        <p th:if="${#lists.isEmpty(claims)}" class="empty">No recorded claims.</p>
+        <ul class="evidence" th:unless="${#lists.isEmpty(claims)}">
+            <li th:each="e : ${claims}">
+                <span class="sev" th:classappend="'sev-' + ${#strings.toLowerCase(e.severity)}" th:text="${e.severity}">sev</span>
+                <code th:text="${e.evidenceId}">EV</code> <strong th:text="${e.type}">type</strong>
+                <span th:text="e.valueSummary">summary</span>
+                <span class="meta" th:text="${e.provenance} + ' · ' + ${e.sourceRef} + ' · ' + ${#temporals.format(e.observedAt,'yyyy-MM-dd HH:mm:ss')} + ' UTC'">meta</span>
+            </li>
+        </ul>
+        <details class="intake-detail">
+            <summary>Open intake record</summary>
+            <p><strong>Original statement (verbatim, untrusted data):</strong> <span th:text="${t.statementOriginal}">statement</span></p>
+            <p th:if="${t.injectionIndicators != null and !t.injectionIndicators.isEmpty()}" class="alert alert-warn" role="note">
+                Instruction-like content flagged and treated as data: <span th:text="${t.injectionIndicators}">indicators</span></p>
+        </details>
+    </section>
+
+    <section class="card" aria-labelledby="observed-h">
+        <h2 id="observed-h">Tool-observed evidence</h2>
+        <p th:if="${#lists.isEmpty(observed)}" class="empty">No tool evidence yet.</p>
+        <ul class="evidence" th:unless="${#lists.isEmpty(observed)}">
+            <li th:each="e : ${observed}" th:with="tr=${traceById.get(e.sourceRef)}">
+                <span class="sev" th:classappend="'sev-' + ${#strings.toLowerCase(e.severity)}" th:text="${e.severity}">sev</span>
+                <code th:text="${e.evidenceId}">EV</code> <strong th:text="${e.type}">type</strong>
+                <span th:text="e.valueSummary">summary</span>
+                <span class="meta" th:text="${e.provenance} + ' · ' + ${e.sourceRef} + ' · ' + ${#temporals.format(e.observedAt,'yyyy-MM-dd HH:mm:ss')} + ' UTC'">meta</span>
+                <details th:if="${tr != null and tr.resultJson != null}" class="tool-result">
+                    <summary>Open redacted tool result (<span th:text="${tr.toolName}">tool</span>)</summary>
+                    <pre class="json" th:text="${tr.resultJson}">{}</pre>
+                </details>
+            </li>
+        </ul>
+    </section>
+
+    <section class="card" th:unless="${#lists.isEmpty(system)}" aria-labelledby="system-h">
+        <h2 id="system-h">System flags</h2>
+        <ul class="evidence">
+            <li th:each="e : ${system}">
+                <span class="sev" th:classappend="'sev-' + ${#strings.toLowerCase(e.severity)}" th:text="${e.severity}">sev</span>
+                <code th:text="${e.evidenceId}">EV</code> <strong th:text="${e.type}">type</strong> <span th:text="e.valueSummary">summary</span>
+            </li>
+        </ul>
+    </section>
+
+    <section class="card" th:if="${rec != null}" aria-labelledby="summary-h">
+        <h2 id="summary-h">Generated summary (advisory)</h2>
+        <p class="advisory">“<span th:text="${rec.rationale}">rationale</span>” — <span class="meta" th:text="${rec.recommendationId} + ' · ' + ${rec.mode} + ' mode'">ref</span></p>
+        <p th:unless="${#lists.isEmpty(rec.contradictions)}"><strong>Contradictions:</strong>
+            <span th:each="x : ${rec.contradictions}" th:text="${x} + ' '">x</span></p>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

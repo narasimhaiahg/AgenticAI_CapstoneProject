@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Policy catalogue')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main id="main">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1>Policy catalogue</h1>
+    <p class="hint">Embedding model: <code th:text="${embeddingModel}">m</code>. Only ACTIVE, effective, non-quarantined chunks are retrievable.</p>
+    <section class="card">
+        <h2>Documents</h2>
+        <div class="table-wrap"><table>
+            <thead><tr><th scope="col">Document</th><th scope="col">Title</th><th scope="col">Version</th><th scope="col">Effective</th>
+                <th scope="col">Owner</th><th scope="col">Declared status</th><th scope="col">Applies to</th></tr></thead>
+            <tbody><tr th:each="d : ${documents}">
+                <td><code th:text="${d.documentId}">id</code></td><td th:text="${d.title}">t</td><td th:text="${d.version}">v</td>
+                <td th:text="${d.effectiveDate}">e</td><td th:text="${d.owner}">o</td><td th:text="${d.declaredStatus}">s</td>
+                <td th:text="${#strings.listJoin(d.appliesTo, ', ')}">a</td>
+            </tr></tbody>
+        </table></div>
+        <p th:unless="${#lists.isEmpty(rejected)}" class="alert alert-warn">Rejected documents: <span th:text="${rejected}">r</span></p>
+    </section>
+    <section class="card">
+        <h2>Chunks</h2>
+        <div class="table-wrap"><table>
+            <thead><tr><th scope="col">Chunk</th><th scope="col">Document</th><th scope="col">Version</th><th scope="col">Section</th>
+                <th scope="col">Availability</th><th scope="col">Flags</th></tr></thead>
+            <tbody><tr th:each="ch : ${chunks}">
+                <td><code th:text="${ch.chunkId}">c</code></td><td th:text="${ch.documentId}">d</td><td th:text="${ch.version}">v</td>
+                <td th:text="${ch.section} + ' ' + ${ch.sectionTitle}">s</td><td th:text="${ch.availability}">a</td>
+                <td th:text="${#lists.isEmpty(ch.injectionIndicators) ? '—' : #strings.listJoin(ch.injectionIndicators, ', ')}">f</td>
+            </tr></tbody>
+        </table></div>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

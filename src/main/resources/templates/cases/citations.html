@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Policy citations')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main id="main">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <section th:replace="~{fragments/layout :: caseHeader}"></section>
+
+    <section class="card" th:if="${rec != null}" aria-labelledby="q-h">
+        <h2 id="q-h">Retrieval</h2>
+        <p th:text="'Query: ' + ${rec.retrievalQuery}">query</p>
+        <p th:text="${rec.retrievalAbstained} ? 'Result: ABSTAINED — no passage met the threshold (best score ' + ${rec.retrievalBestScore} + ')'
+            : 'Result: ' + ${#lists.size(citations)} + ' passage(s) above threshold; best score ' + ${rec.retrievalBestScore}">result</p>
+    </section>
+
+    <section class="card" aria-labelledby="cit-h">
+        <h2 id="cit-h">Retrieved passages</h2>
+        <p th:if="${#lists.isEmpty(citations)}" class="empty">Nothing was retrieved for this case. No procedural guidance is shown.</p>
+        <article class="passage" th:each="p : ${citations}" th:id="${p.chunkId}">
+            <h3 th:text="${p.documentId} + ' — ' + ${p.title}">doc</h3>
+            <p class="meta">Version <span th:text="${p.version}">v</span> · effective <span th:text="${p.effectiveDate}">d</span> ·
+                §<span th:text="${p.section}">s</span> <span th:text="${p.sectionTitle}">t</span> · chunk <code th:text="${p.chunkId}">c</code> ·
+                score <span th:text="${#numbers.formatDecimal(p.score,1,3,'POINT')}">0</span> ·
+                <span th:if="${p.cited}" class="badge">cited in recommendation <span th:text="${p.recommendationId}">r</span></span>
+                <span th:unless="${p.cited}">retrieved, not cited</span></p>
+            <pre class="json" th:text="${p.passage}">passage</pre>
+        </article>
+    </section>
+
+    <section class="card" th:unless="${#lists.isEmpty(unavailableChunks)}" aria-labelledby="un-h">
+        <h2 id="un-h">Unavailable policy content</h2>
+        <p class="hint">Withdrawn, superseded, not-yet-effective or quarantined chunks are excluded from retrieval and cannot be cited.</p>
+        <ul class="evidence"><li th:each="u : ${unavailableChunks}"
+            th:text="${u.chunkId} + ' — ' + ${u.documentId} + ' v' + ${u.version} + ' §' + ${u.section} + ' (' + ${u.availability} + ')'">u</li></ul>
+    </section>
+    <p><a th:href="@{/ui/policies}">Open the full policy catalogue</a></p>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

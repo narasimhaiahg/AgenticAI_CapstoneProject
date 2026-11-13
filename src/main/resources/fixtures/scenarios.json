@@ -1,0 +1,64 @@
+{
+  "_comment": "SYNTHETIC TRAINING DATA ONLY. Keyed by transactionRef. Section values may be objects or the markers NOT_FOUND, SLOW (exceeds tool timeout) or ERROR.",
+  "transactions": {
+    "TXN-2026-784102": {
+      "transaction": { "status": "POSTED", "timestamp": "2026-11-06T03:12:00Z", "amount": "48750.00", "currency": "INR", "channel": "CARD_NOT_PRESENT", "authOutcome": "UNAVAILABLE", "fingerprint": "FP-7c41d0e9a2" },
+      "device": { "deviceKnown": false, "firstSeenAt": "2026-11-06T03:05:00Z", "trustLevel": "LOW", "observations": ["Device first observed 7 minutes before the transaction", "No prior trusted sessions"] },
+      "location": { "distanceKm": 1850, "timeDeltaMinutes": 95, "anomalyLevel": "HIGH", "observations": ["Transaction IP region inconsistent with home region", "1850 km from last trusted login 95 minutes earlier"] },
+      "merchant": { "riskBand": "HIGH", "blocklistMatch": false, "category": "DIGITAL_GOODS", "observations": ["Training merchant with elevated card-not-present dispute rate"] },
+      "priorDisputes": { "count": 0, "similarCount": 0, "lookbackDays": 365, "observations": ["No earlier disputes"] }
+    },
+    "TXN-2026-551230": {
+      "transaction": { "status": "POSTED", "timestamp": "2026-10-28T10:20:00Z", "amount": "12999.00", "currency": "INR", "channel": "CARD_NOT_PRESENT", "authOutcome": "SUCCESS_3DS", "fingerprint": "FP-55a1230bb1" },
+      "device": { "deviceKnown": true, "firstSeenAt": "2025-02-11T08:00:00Z", "trustLevel": "HIGH", "observations": ["Customer's usual mobile device"] },
+      "location": { "distanceKm": 4, "timeDeltaMinutes": 300, "anomalyLevel": "LOW", "observations": ["Consistent with home region"] },
+      "merchant": { "riskBand": "MEDIUM", "blocklistMatch": false, "category": "ELECTRONICS", "observations": ["Elevated non-delivery complaints in training data"] },
+      "priorDisputes": { "count": 1, "similarCount": 0, "lookbackDays": 365, "observations": ["One unrelated dispute resolved in customer's favour"] }
+    },
+    "TXN-2026-660915": {
+      "transaction": { "status": "POSTED", "timestamp": "2026-11-02T14:01:30Z", "amount": "2340.00", "currency": "INR", "channel": "CARD_PRESENT", "authOutcome": "SUCCESS_CHIP_PIN", "fingerprint": "FP-66091a77c0", "duplicateOfRef": "TXN-2026-660914" },
+      "device": { "deviceKnown": true, "firstSeenAt": "2024-06-01T09:00:00Z", "trustLevel": "HIGH", "observations": ["Card-present terminal transaction"] },
+      "location": { "distanceKm": 2, "timeDeltaMinutes": 1, "anomalyLevel": "LOW", "observations": ["Same terminal as the matching posting"] },
+      "merchant": { "riskBand": "LOW", "blocklistMatch": false, "category": "GROCERY", "observations": ["Known terminal batch re-submission issue in training data"] },
+      "priorDisputes": { "count": 0, "similarCount": 0, "lookbackDays": 365, "observations": ["No earlier disputes"] }
+    },
+    "TXN-2026-999404": {
+      "transaction": "NOT_FOUND"
+    },
+    "TXN-2026-310577": {
+      "transaction": { "status": "POSTED", "timestamp": "2026-11-01T18:45:00Z", "amount": "10000.00", "currency": "INR", "channel": "ATM", "authOutcome": "SUCCESS_CHIP_PIN", "fingerprint": "FP-310577aa01" },
+      "device": { "deviceKnown": true, "firstSeenAt": "2023-03-15T09:00:00Z", "trustLevel": "HIGH", "observations": ["Chip and PIN at bank-owned ATM"] },
+      "location": { "distanceKm": 6, "timeDeltaMinutes": 240, "anomalyLevel": "LOW", "observations": ["Within home region"] },
+      "merchant": { "riskBand": "LOW", "blocklistMatch": false, "category": "ATM_CASH", "observations": ["Bank-owned ATM"] },
+      "priorDisputes": { "count": 0, "similarCount": 0, "lookbackDays": 365, "observations": ["No earlier disputes"] }
+    },
+    "TXN-2026-427788": {
+      "transaction": { "status": "POSTED", "timestamp": "2026-11-04T07:10:00Z", "amount": "8650.00", "currency": "INR", "channel": "CARD_NOT_PRESENT", "authOutcome": "SUCCESS_3DS", "fingerprint": "FP-427788c3d2" },
+      "device": { "deviceKnown": true, "firstSeenAt": "2024-09-20T12:00:00Z", "trustLevel": "HIGH", "observations": ["Long-standing trusted device"] },
+      "location": { "distanceKm": 2300, "timeDeltaMinutes": 40, "anomalyLevel": "HIGH", "observations": ["Trusted device reported 2300 km away 40 minutes after a home-region login"] },
+      "merchant": { "riskBand": "LOW", "blocklistMatch": false, "category": "TRAVEL", "observations": ["Established travel merchant"] },
+      "priorDisputes": { "count": 0, "similarCount": 0, "lookbackDays": 365, "observations": ["No earlier disputes"] }
+    },
+    "TXN-2026-118850": {
+      "transaction": { "status": "POSTED", "timestamp": "2026-11-05T22:30:00Z", "amount": "31500.00", "currency": "INR", "channel": "CARD_NOT_PRESENT", "authOutcome": "UNAVAILABLE", "fingerprint": "FP-118850ee90" },
+      "device": { "deviceKnown": false, "firstSeenAt": "2026-11-05T22:28:00Z", "trustLevel": "LOW", "observations": ["New device, emulator characteristics in training data"] },
+      "location": { "distanceKm": 1420, "timeDeltaMinutes": 60, "anomalyLevel": "HIGH", "observations": ["Inconsistent with recent trusted activity"] },
+      "merchant": "SLOW",
+      "priorDisputes": { "count": 0, "similarCount": 0, "lookbackDays": 365, "observations": ["No earlier disputes"] }
+    },
+    "TXN-2026-205561": {
+      "transaction": { "status": "POSTED", "timestamp": "2026-10-30T16:05:00Z", "amount": "5400.00", "currency": "INR", "channel": "CARD_NOT_PRESENT", "authOutcome": "SUCCESS_3DS", "fingerprint": "FP-205561d4e1" },
+      "device": { "deviceKnown": true, "firstSeenAt": "2024-01-10T10:00:00Z", "trustLevel": "HIGH", "observations": ["Customer's usual laptop"] },
+      "location": { "distanceKm": 3, "timeDeltaMinutes": 600, "anomalyLevel": "LOW", "observations": ["Home region"] },
+      "merchant": { "riskBand": "LOW", "blocklistMatch": false, "category": "SUBSCRIPTION", "observations": ["Recurring billing descriptor in training data"] },
+      "priorDisputes": { "count": 4, "similarCount": 3, "lookbackDays": 365, "observations": ["Three similar 'not recognised' claims later confirmed as authorised"] }
+    },
+    "TXN-2026-700111": {
+      "transaction": { "status": "POSTED", "timestamp": "2026-11-07T01:40:00Z", "amount": "22000.00", "currency": "INR", "channel": "CARD_NOT_PRESENT", "authOutcome": "UNAVAILABLE", "fingerprint": "FP-700111f0a3" },
+      "device": { "deviceKnown": false, "firstSeenAt": "2026-11-07T01:35:00Z", "trustLevel": "LOW", "observations": ["Device first observed on this transaction"] },
+      "location": { "distanceKm": 1990, "timeDeltaMinutes": 70, "anomalyLevel": "HIGH", "observations": ["Inconsistent with recent trusted activity"] },
+      "merchant": { "riskBand": "HIGH", "blocklistMatch": true, "category": "DIGITAL_GOODS", "observations": ["Matches training blocklist entry"] },
+      "priorDisputes": { "count": 0, "similarCount": 0, "lookbackDays": 365, "observations": ["No earlier disputes"] }
+    }
+  }
+}
