@@ -1,10 +1,14 @@
 (function () {
     // Loading state on forms.
     document.querySelectorAll("form[data-loading-form]").forEach(function (form) {
-        form.addEventListener("submit", function () {
+        form.addEventListener("submit", function (event) {
+            if (form.dataset.submitted === "true") { event.preventDefault(); return; }
+            form.dataset.submitted = "true";
             var l = form.querySelector(".loading");
             if (l) { l.hidden = false; }
-            form.querySelectorAll("button[type=submit]").forEach(function (b) { b.disabled = true; });
+            // Do not disable submit buttons: the clicked submitter's name/value
+            // (e.g. action=start) must stay in the submitted form data.
+            form.style.pointerEvents = "none";
         });
     });
 

@@ -15,7 +15,7 @@
             <li th:each="e : ${claims}">
                 <span class="sev" th:classappend="'sev-' + ${#strings.toLowerCase(e.severity)}" th:text="${e.severity}">sev</span>
                 <code th:text="${e.evidenceId}">EV</code> <strong th:text="${e.type}">type</strong>
-                <span th:text="e.valueSummary">summary</span>
+                <span th:text="${e.valueSummary}">summary</span>
                 <span class="meta" th:text="${e.provenance} + ' · ' + ${e.sourceRef} + ' · ' + ${#temporals.format(e.observedAt,'yyyy-MM-dd HH:mm:ss')} + ' UTC'">meta</span>
             </li>
         </ul>
@@ -34,7 +34,7 @@
             <li th:each="e : ${observed}" th:with="tr=${traceById.get(e.sourceRef)}">
                 <span class="sev" th:classappend="'sev-' + ${#strings.toLowerCase(e.severity)}" th:text="${e.severity}">sev</span>
                 <code th:text="${e.evidenceId}">EV</code> <strong th:text="${e.type}">type</strong>
-                <span th:text="e.valueSummary">summary</span>
+                <span th:text="${e.valueSummary}">summary</span>
                 <span class="meta" th:text="${e.provenance} + ' · ' + ${e.sourceRef} + ' · ' + ${#temporals.format(e.observedAt,'yyyy-MM-dd HH:mm:ss')} + ' UTC'">meta</span>
                 <details th:if="${tr != null and tr.resultJson != null}" class="tool-result">
                     <summary>Open redacted tool result (<span th:text="${tr.toolName}">tool</span>)</summary>
@@ -49,7 +49,7 @@
         <ul class="evidence">
             <li th:each="e : ${system}">
                 <span class="sev" th:classappend="'sev-' + ${#strings.toLowerCase(e.severity)}" th:text="${e.severity}">sev</span>
-                <code th:text="${e.evidenceId}">EV</code> <strong th:text="${e.type}">type</strong> <span th:text="e.valueSummary">summary</span>
+                <code th:text="${e.evidenceId}">EV</code> <strong th:text="${e.type}">type</strong> <span th:text="${e.valueSummary}">summary</span>
             </li>
         </ul>
     </section>
