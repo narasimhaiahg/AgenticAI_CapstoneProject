@@ -83,6 +83,9 @@ public class PromptRenderer {
         FraudCaseRecommendation r = ctx.latestRecommendation();
         vars.put("recommendation", r == null ? "none" : r.classification() + " / " + r.recommendedRoute()
                 + " / risk " + r.riskLevel() + " / confidence " + r.confidence() + " — " + r.rationale());
+        // Include the persisted per-case history so adapters relying on fresh in-memory windows
+        // still see earlier turns after restarts or mode switches.
+        vars.put("history", conversation(ctx.history()));
         vars.put("guardrails", guardrails);
         return render(followUpUserTemplate, vars);
     }

@@ -14,5 +14,8 @@ Policy context:
 
 Current recommendation: {{recommendation}}
 
+Prior conversation (persisted case notes):
+{{history}}
+
 Investigator question:
 {{question}}
