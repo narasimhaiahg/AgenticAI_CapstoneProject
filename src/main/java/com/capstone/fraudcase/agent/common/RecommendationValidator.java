@@ -130,8 +130,14 @@ public class RecommendationValidator {
         if (!violations.isEmpty()) {
             throw new RecommendationValidationException(violations);
         }
+        // A model must not erase gaps the application already recorded: union its lists with the
+        // case's known missing information and contradictions so reviewers can acknowledge them.
+        List<String> missing = new ArrayList<>(context.missingInformation());
+        rec.missingInformation().forEach(m -> { if (!missing.contains(m)) missing.add(m); });
+        List<String> contradictions = new ArrayList<>(context.contradictions());
+        rec.contradictions().forEach(con -> { if (!contradictions.contains(con)) contradictions.add(con); });
         return new FraudCaseRecommendation(rec.caseId(), rec.classification(), rec.riskLevel(), rec.recommendedRoute(),
-                rec.confidence(), true, rec.evidenceIds(), normalised, rec.missingInformation(), rec.contradictions(),
+                rec.confidence(), true, rec.evidenceIds(), normalised, missing, contradictions,
                 rec.ruleIds(), rec.toolTraceIds(), rec.rationale().trim(), rec.mode(), rec.inputFacts());
     }
 
