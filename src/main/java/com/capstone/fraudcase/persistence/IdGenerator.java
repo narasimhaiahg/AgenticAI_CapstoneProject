@@ -1,9 +1,6 @@
 package com.capstone.fraudcase.persistence;
 
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Year;
@@ -12,11 +9,11 @@ import java.time.Year;
 @Component
 public class IdGenerator {
 
-    private final JdbcTemplate jdbc;
+    private final SequenceAllocator sequences;
     private final Clock clock;
 
-    public IdGenerator(JdbcTemplate jdbc, Clock clock) {
-        this.jdbc = jdbc;
+    public IdGenerator(SequenceAllocator sequences, Clock clock) {
+        this.sequences = sequences;
         this.clock = clock;
     }
 
@@ -44,15 +41,10 @@ public class IdGenerator {
         return next("audit_seq");
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
-    public long next(String sequence) {
-        // Row-locked counter — portable across MySQL and H2 (no vendor SEQUENCE objects).
-        Long v = jdbc.queryForObject("SELECT next_val FROM id_sequence WHERE name = ? FOR UPDATE",
-                Long.class, sequence);
-        if (v == null) {
-            throw new IllegalStateException("Sequence " + sequence + " returned no value");
-        }
-        jdbc.update("UPDATE id_sequence SET next_val = ? WHERE name = ?", v + 1, sequence);
-        return v;
+    // Delegates to SequenceAllocator so the counter row lock is taken and released inside
+    // its own REQUIRES_NEW transaction — self-invocation of a @Transactional method here
+    // would bypass the proxy and leave the SELECT FOR UPDATE lock unmanaged.
+    private long next(String sequence) {
+        return sequences.next(sequence);
     }
 }
