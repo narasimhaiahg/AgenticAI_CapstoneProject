@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Sign in')}"></head>
+<body>
+<main id="main" class="narrow">
+    <h1>Fraud &amp; Dispute Investigation Assistant</h1>
+    <p class="badge badge-synthetic">SYNTHETIC TRAINING ENVIRONMENT</p>
+    <div th:if="${param.error}" class="alert alert-error" role="alert">Invalid username or password.</div>
+    <div th:if="${param.logout}" class="alert alert-info" role="status">You have been signed out.</div>
+    <form th:action="@{/login}" method="post" class="card">
+        <label for="username">Username</label>
+        <input id="username" name="username" autocomplete="username" required autofocus>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit" class="primary">Sign in</button>
+    </form>
+    <p class="hint">Training users: agent, investigator, reviewer, lead, auditor (password from <code>CAPSTONE_DEMO_PASSWORD</code>).</p>
+</main>
+</body>
+</html>

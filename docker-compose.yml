@@ -1,0 +1,22 @@
+# Local development MySQL for the capstone app.
+# docker compose up -d  →  jdbc:mysql://localhost:3306/fraudcase_db (capstone / capstone-dev)
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: fraudcase_db
+      MYSQL_USER: capstone
+      MYSQL_PASSWORD: capstone-dev
+      MYSQL_ROOT_PASSWORD: root-dev
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pcapstone-dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  mysql-data:

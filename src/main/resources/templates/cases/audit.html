@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Audit trail')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main id="main">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <section th:replace="~{fragments/layout :: caseHeader}"></section>
+    <section class="card">
+        <h2>Append-only audit trail</h2>
+        <p class="hint">Events are hash-chained (each event links to the previous payload hash); payloads are hashed, not stored.
+            <span th:if="${#lists.isEmpty(brokenLinks)}">Chain verified: no broken links.</span>
+            <span class="alert alert-error" th:unless="${#lists.isEmpty(brokenLinks)}" th:text="'Broken links: ' + ${brokenLinks}"></span></p>
+        <p th:if="${#lists.isEmpty(events)}" class="empty">No events recorded.</p>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(events)}"><table>
+            <thead><tr><th scope="col">Seq</th><th scope="col">Event</th><th scope="col">Type</th><th scope="col">Actor</th><th scope="col">Correlation</th>
+                <th scope="col">Summary</th><th scope="col">Hash</th><th scope="col">Recorded</th></tr></thead>
+            <tbody><tr th:each="a : ${events}">
+                <td th:text="${a.sequenceNo}">1</td>
+                <td><code th:text="${a.eventId}">AE</code></td>
+                <td th:text="${a.eventType}">t</td>
+                <td th:text="${a.actorType} + '/' + ${a.actorId}">a</td>
+                <td><code th:text="${a.correlationId != null ? a.correlationId.substring(0,8) : '—'}">c</code></td>
+                <td th:text="${a.summary}">s</td>
+                <td><code th:text="${a.payloadHash.substring(0,12)}">h</code></td>
+                <td th:text="${#temporals.format(a.recordedAt,'yyyy-MM-dd HH:mm:ss')} + ' UTC'">t</td>
+            </tr></tbody>
+        </table></div>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,21 @@
+Case {{caseId}}
+
+Guardrails in force:
+{{guardrails}}
+
+Case facts:
+{{caseSummary}}
+
+Evidence and tool traces:
+{{toolEvidence}}
+
+Policy context:
+{{policyContext}}
+
+Current recommendation: {{recommendation}}
+
+Prior conversation (persisted case notes):
+{{history}}
+
+Investigator question:
+{{question}}

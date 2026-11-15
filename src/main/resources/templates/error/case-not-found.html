@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Not found')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main id="main"><div class="card"><p class="empty" th:text="${message}">Not found.</p><p><a th:href="@{/ui/cases}">Back to cases</a></p></div></main>
+</body>
+</html>

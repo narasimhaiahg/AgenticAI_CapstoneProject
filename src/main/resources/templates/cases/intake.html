@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('New case')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main id="main">
+    <h1>Fraud case intake</h1>
+    <p class="alert alert-warn" role="note">Synthetic training data only. Never enter real card, account or customer identifiers —
+        references must be masked (e.g. <code>CUST-••••-4821</code>, <code>NORTHSTAR DIGITAL ••••73</code>).</p>
+    <div th:if="${errors}" class="alert alert-error" role="alert" id="error-summary" tabindex="-1">
+        <h2>Please correct the highlighted fields</h2>
+        <ul><li th:each="e : ${errors}"><a th:href="'#' + ${e.key}" th:text="${e.key} + ': ' + ${e.value}">err</a></li></ul>
+    </div>
+    <div class="card sample-loader">
+        <label for="sample">Load a synthetic sample case</label>
+        <select id="sample" data-samples-target>
+            <option value="">— choose a scenario —</option>
+        </select>
+        <script type="application/json" id="sample-cases" th:utext="${sampleCasesJson}"></script>
+        <button type="button" id="restore-draft" class="secondary">Restore saved draft</button>
+    </div>
+    <form th:action="@{/ui/cases}" th:object="${form}" method="post" id="intake-form" class="card form-grid" novalidate data-loading-form>
+        <fieldset>
+            <legend>Customer (masked)</legend>
+            <label for="maskedCustomerRef">Masked customer reference *</label>
+            <input th:field="*{maskedCustomerRef}" id="maskedCustomerRef" required placeholder="CUST-••••-4821"
+                   th:attr="aria-invalid=${errors != null and errors.containsKey('maskedCustomerRef')}, aria-describedby='maskedCustomerRef-err'">
+            <p class="field-error" id="maskedCustomerRef-err" th:if="${errors != null and errors.containsKey('maskedCustomerRef')}" th:text="${errors.get('maskedCustomerRef')}"></p>
+            <label for="homeRegion">Home region *</label>
+            <input th:field="*{homeRegion}" id="homeRegion" required placeholder="IN-KA">
+            <p class="field-error" th:if="${errors != null and errors.containsKey('homeRegion')}" th:text="${errors.get('homeRegion')}"></p>
+            <label for="intakeChannel">Reported via</label>
+            <select th:field="*{intakeChannel}" id="intakeChannel"><option th:each="v : ${intakeChannels}" th:value="${v}" th:text="${v}"></option></select>
+        </fieldset>
+        <fieldset>
+            <legend>Transaction</legend>
+            <label for="transactionRef">Transaction reference *</label>
+            <input th:field="*{transactionRef}" id="transactionRef" required placeholder="TXN-2026-784102">
+            <p class="field-error" th:if="${errors != null and errors.containsKey('transactionRef')}" th:text="${errors.get('transactionRef')}"></p>
+            <div class="two-col">
+                <div><label for="amount">Amount *</label>
+                    <input th:field="*{amount}" id="amount" inputmode="decimal" required placeholder="48750.00">
+                    <p class="field-error" th:if="${errors != null and errors.containsKey('amount')}" th:text="${errors.get('amount')}"></p></div>
+                <div><label for="currency">Currency *</label>
+                    <input th:field="*{currency}" id="currency" required maxlength="3" placeholder="INR">
+                    <p class="field-error" th:if="${errors != null and errors.containsKey('currency')}" th:text="${errors.get('currency')}"></p></div>
+            </div>
+            <label for="occurredAt">Occurred at (ISO-8601 with offset) *</label>
+            <input th:field="*{occurredAt}" id="occurredAt" required placeholder="2026-11-06T08:42:00+05:30">
+            <p class="field-error" th:if="${errors != null and errors.containsKey('occurredAt')}" th:text="${errors.get('occurredAt')}"></p>
+            <div class="two-col">
+                <div><label for="status">Status *</label>
+                    <select th:field="*{status}" id="status"><option th:each="v : ${txStatuses}" th:value="${v}" th:text="${v}"></option></select></div>
+                <div><label for="transactionChannel">Channel *</label>
+                    <select th:field="*{transactionChannel}" id="transactionChannel"><option th:each="v : ${txChannels}" th:value="${v}" th:text="${v}"></option></select></div>
+            </div>
+            <label for="maskedMerchant">Masked merchant *</label>
+            <input th:field="*{maskedMerchant}" id="maskedMerchant" required placeholder="NORTHSTAR DIGITAL ••••73">
+            <p class="field-error" th:if="${errors != null and errors.containsKey('maskedMerchant')}" th:text="${errors.get('maskedMerchant')}"></p>
+        </fieldset>
+        <fieldset class="span-2">
+            <legend>Claim</legend>
+            <div class="two-col">
+                <div><label for="issueType">Issue type *</label>
+                    <select th:field="*{issueType}" id="issueType"><option th:each="v : ${issueTypes}" th:value="${v}" th:text="${v.description()}"></option></select></div>
+                <div><label for="cardPossession">Card possession</label>
+                    <select th:field="*{cardPossession}" id="cardPossession"><option th:each="v : ${possessions}" th:value="${v}" th:text="${v}"></option></select></div>
+            </div>
+            <div class="checkbox"><input type="checkbox" th:field="*{merchantRecognised}" id="merchantRecognised"><label for="merchantRecognised">Customer recognises the merchant</label></div>
+            <label for="customerStatement">Customer statement * <span class="hint">(max 1000 characters, no markup, no card numbers; stored verbatim and treated as untrusted data)</span></label>
+            <textarea th:field="*{customerStatement}" id="customerStatement" rows="4" maxlength="1000" required></textarea>
+            <p class="field-error" th:if="${errors != null and errors.containsKey('customerStatement')}" th:text="${errors.get('customerStatement')}"></p>
+        </fieldset>
+        <fieldset class="span-2">
+            <legend>Consent and control</legend>
+            <div class="checkbox"><input type="checkbox" th:field="*{syntheticDataConfirmed}" id="syntheticDataConfirmed" required>
+                <label for="syntheticDataConfirmed">I confirm this case uses synthetic training data only *</label></div>
+            <p class="field-error" th:if="${errors != null and errors.containsKey('syntheticDataConfirmed')}" th:text="${errors.get('syntheticDataConfirmed')}"></p>
+            <div class="checkbox"><input type="checkbox" th:field="*{reviewRequired}" id="reviewRequired" required>
+                <label for="reviewRequired">Human review is required before any routing or closure *</label></div>
+            <p class="field-error" th:if="${errors != null and errors.containsKey('reviewRequired')}" th:text="${errors.get('reviewRequired')}"></p>
+        </fieldset>
+        <div class="actions span-2">
+            <button type="button" id="save-draft" class="secondary">Save draft (this browser)</button>
+            <button type="submit" name="action" value="create" class="secondary">Create case</button>
+            <button type="submit" name="action" value="start" class="primary">Create &amp; start investigation</button>
+            <span class="loading" role="status" aria-live="polite" hidden>Running investigation…</span>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

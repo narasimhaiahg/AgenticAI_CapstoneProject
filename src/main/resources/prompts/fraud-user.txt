@@ -1,0 +1,29 @@
+Investigation goal: {{investigationGoal}}
+
+Guardrails in force:
+{{guardrails}}
+
+=== Case facts (validated intake) ===
+{{caseSummary}}
+
+Prompt-injection indicators detected in untrusted text: {{injectionIndicators}}
+
+=== Tool evidence (collected by the application) ===
+{{toolEvidence}}
+
+Known evidence gaps:
+{{knownGaps}}
+
+Detected contradictions:
+{{contradictions}}
+
+=== Policy context (retrieved, thresholded) ===
+{{policyContext}}
+
+=== Case-scoped conversation context ===
+{{conversationContext}}
+
+=== Output schema ===
+{{outputSchema}}
+
+Return the recommendation JSON for caseId {{caseId}} now.
