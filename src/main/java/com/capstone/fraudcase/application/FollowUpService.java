@@ -54,6 +54,7 @@ public class FollowUpService {
 
         FraudCaseEntity c = cases.get(caseId);
         TransactionClaimEntity claim = cases.claim(caseId);
+        List<String> injectionIndicators = com.capstone.fraudcase.agent.common.PromptInjectionDetector.detect(q);
         List<ConversationTurn> history = memory.history(caseId);
         FraudCaseContext ctx = loader.load(c, claim, history);
         FraudCaseRecommendation latest = recommendations.findFirstByCaseIdOrderByCreatedAtDescRecommendationIdDesc(caseId)
@@ -75,7 +76,12 @@ public class FollowUpService {
         memory.append(caseId, ConversationTurn.ASSISTANT, answer.answer(), answer.mode().key());
         audit.append(caseId, "FOLLOW_UP_ANSWERED", ActorType.USER, actorId, null,
                 "Follow-up answered in " + answer.mode().key() + " mode; refs " + answer.referencedEvidenceIds(),
-                Map.of("question", q, "answer", answer.answer()));
+                Map.of("question", q, "answer", answer.answer(), "injectionIndicators", injectionIndicators));
+        if (!injectionIndicators.isEmpty()) {
+            String flag = "Question contained instruction-like text (" + String.join(", ", injectionIndicators)
+                    + "); it was treated strictly as data, not obeyed.";
+            note = note == null ? flag : note + " " + flag;
+        }
         return new FollowUpResult(caseId, answer, note);
     }
 }
