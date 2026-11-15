@@ -21,6 +21,7 @@ import com.capstone.fraudcase.domain.Classification;
 import com.capstone.fraudcase.domain.ProcessorMode;
 import com.capstone.fraudcase.domain.RiskLevel;
 import com.capstone.fraudcase.domain.Route;
+import com.capstone.fraudcase.domain.ToolStatus;
 import com.capstone.fraudcase.knowledge.PolicyQueryBuilder;
 import com.capstone.fraudcase.knowledge.PolicyRetriever;
 import com.capstone.fraudcase.persistence.*;
@@ -37,6 +38,7 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -122,8 +124,11 @@ public class InvestigationOrchestrator {
                 log.error("Investigation failed case={} correlationId={} error={}", caseId, correlationId, e.getClass().getSimpleName());
                 audit.append(caseId, "INVESTIGATION_FAILED", ActorType.SYSTEM, "orchestrator", correlationId,
                         "Investigation failed safely (" + e.getClass().getSimpleName() + "); case set to INCOMPLETE", Map.of("run", run));
+                // Persist a manual-review recommendation so the failed run can still receive a reviewer
+                // disposition; without one, ReviewService rejects every disposition for this case.
+                String recId = persistFailureRecommendation(caseId, correlationId, run, facts, requested);
                 cases.transition(caseId, CaseStatus.INCOMPLETE, ActorType.SYSTEM, "orchestrator", correlationId, "investigation failed");
-                return new InvestigationResult(caseId, run, correlationId, CaseStatus.INCOMPLETE, List.of(), null, requested, null,
+                return new InvestigationResult(caseId, run, correlationId, CaseStatus.INCOMPLETE, List.of(), recId, requested, null,
                         "Investigation failed; manual review required");
             }
         } finally {
@@ -250,6 +255,28 @@ public class InvestigationOrchestrator {
                 List.of(), "No validated recommendation could be produced; route to manual review. No automated action taken.",
                 ProcessorMode.RULES, Map.of());
         return validator.validate(rec, ctx);
+    }
+
+    /** Saves a SAFE-MANUAL-REVIEW recommendation for a run that failed before analysis; returns its id or null. */
+    private String persistFailureRecommendation(String caseId, String correlationId, int run, CaseFacts facts, ProcessorMode requested) {
+        try {
+            FraudCaseContext ctx = new FraudCaseContext(caseId, correlationId, run, facts, List.of(), List.of(),
+                    List.of(), List.of("investigation completed without a result"),
+                    PolicyRetrievalResult.empty("", retriever.topK(), retriever.threshold()), memory.history(caseId), List.of());
+            FraudCaseRecommendation rec = safeManualReview(ctx);
+            String recId = ids.recommendationId();
+            ToolResult<CaseSla> noSla = new ToolResult<>(null, ToolNames.SLA, ToolStatus.UNAVAILABLE, Instant.now(),
+                    EvidenceToolkit.ORIGIN_PLAN, 0, "not executed", null);
+            recommendationRepo.save(recommendationEntity(recId, ctx, rec, requested,
+                    "Investigation failed before analysis", PolicyRetrievalResult.empty("", retriever.topK(), retriever.threshold()), noSla));
+            audit.append(caseId, "RECOMMENDATION_VALIDATED", ActorType.PROCESSOR, rec.mode().key(), correlationId,
+                    recId + ": " + rec.classification() + " -> " + rec.recommendedRoute() + " (failed run); human review required",
+                    Map.of("recommendationId", recId));
+            return recId;
+        } catch (RuntimeException saveError) {
+            log.error("Could not persist failure recommendation for case {}: {}", caseId, saveError.getClass().getSimpleName());
+            return null;
+        }
     }
 
     private List<com.capstone.fraudcase.agent.common.ToolOutcome> executorTraces(String caseId, int run) {
