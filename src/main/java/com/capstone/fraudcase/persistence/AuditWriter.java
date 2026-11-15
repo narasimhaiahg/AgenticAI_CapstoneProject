@@ -39,8 +39,10 @@ public class AuditWriter {
     @Transactional
     public synchronized AuditEventEntity append(String caseId, String eventType, ActorType actorType, String actorId,
                                                 String correlationId, String summary, Map<String, ?> payload) {
-        String previous = repository.findTopByOrderBySequenceNoDesc().map(AuditEventEntity::getPayloadHash).orElse(GENESIS);
+        // Allocate the counter before the outer transaction's first query: the outer tx has not
+        // acquired a pool connection yet, so the REQUIRES_NEW allocation never needs a second one.
         long seq = ids.auditSequence();
+        String previous = repository.findTopByOrderBySequenceNoDesc().map(AuditEventEntity::getPayloadHash).orElse(GENESIS);
         OffsetDateTime now = OffsetDateTime.now(clock).withOffsetSameInstant(ZoneOffset.UTC);
         String safeSummary = summary.length() > 480 ? summary.substring(0, 480) : summary;
         String digest = payloadDigest(payload);

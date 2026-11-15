@@ -152,7 +152,9 @@ public class PromptRenderer {
         if (turns.isEmpty()) {
             return "none";
         }
-        return turns.stream().map(t -> t.role() + ": " + t.text()).collect(Collectors.joining("\n"));
+        // History is untrusted case data: fence each turn's text so earlier instruction-like
+        // questions replayed into a later prompt can't be obeyed as instructions.
+        return turns.stream().map(t -> t.role() + ":\n" + fence(t.text())).collect(Collectors.joining("\n"));
     }
 
     private static String fence(String text) {

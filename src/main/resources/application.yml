@@ -5,6 +5,10 @@ spring:
     url: ${CAPSTONE_DB_URL:jdbc:mysql://localhost:3306/fraudcase_db}
     username: ${CAPSTONE_DB_USER:capstone}
     password: ${CAPSTONE_DB_PASSWORD:capstone-dev}
+    hikari:
+      # Sequence counters allocate on a second connection (REQUIRES_NEW) while a caller
+      # transaction may already hold one, so the pool must exceed concurrent transactions.
+      maximum-pool-size: 30
   jpa:
     open-in-view: false
     hibernate:
