@@ -43,12 +43,17 @@ public class AuditWriter {
         long seq = ids.auditSequence();
         OffsetDateTime now = OffsetDateTime.now(clock).withOffsetSameInstant(ZoneOffset.UTC);
         String safeSummary = summary.length() > 480 ? summary.substring(0, 480) : summary;
-        String hash = hash(previous, seq, caseId, eventType, actorType, actorId, now, safeSummary, payloadDigest(payload));
+        String digest = payloadDigest(payload);
+        String content = contentHash(seq, caseId, eventType, actorType, actorId, correlationId, safeSummary);
+        String hash = hash(previous, content, digest);
         return repository.save(new AuditEventEntity("AE-" + seq, seq, caseId, eventType, actorType, actorId, correlationId,
-                safeSummary, hash, previous, now));
+                safeSummary, hash, previous, content, digest, now));
     }
 
-    /** Recomputes the chain link of every event; returns the IDs of events whose previous-hash link is broken. */
+    /**
+     * Recomputes the chain link and, for events written with content integrity fields, the content and payload hash of
+     * every event; returns the IDs of events whose link is broken or whose stored fields no longer match their hashes.
+     */
     public List<String> brokenLinks() {
         List<AuditEventEntity> all = repository.findAllByOrderBySequenceNoAsc();
         String expectedPrevious = GENESIS;
@@ -56,10 +61,22 @@ public class AuditWriter {
         for (AuditEventEntity e : all) {
             if (!e.getPreviousHash().equals(expectedPrevious)) {
                 broken.add(e.getEventId());
+            } else if (e.getContentHash() != null) {
+                String content = contentHash(e.getSequenceNo(), e.getCaseId(), e.getEventType(), e.getActorType(),
+                        e.getActorId(), e.getCorrelationId(), e.getSummary());
+                String expectedHash = hash(e.getPreviousHash(), content, e.getPayloadDigest());
+                if (!content.equals(e.getContentHash()) || !expectedHash.equals(e.getPayloadHash())) {
+                    broken.add(e.getEventId());
+                }
             }
             expectedPrevious = e.getPayloadHash();
         }
         return broken;
+    }
+
+    private static String contentHash(long seq, String caseId, String eventType, ActorType actorType, String actorId,
+                                      String correlationId, String summary) {
+        return hash(seq, caseId, eventType, actorType, actorId, correlationId == null ? "" : correlationId, summary);
     }
 
     private String payloadDigest(Map<String, ?> payload) {

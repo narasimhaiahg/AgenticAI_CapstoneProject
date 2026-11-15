@@ -30,13 +30,16 @@ public class AuditEventEntity {
     private String summary;
     private String payloadHash;
     private String previousHash;
+    private String contentHash;
+    private String payloadDigest;
     private OffsetDateTime recordedAt;
 
     protected AuditEventEntity() {
     }
 
     public AuditEventEntity(String eventId, long sequenceNo, String caseId, String eventType, ActorType actorType, String actorId,
-                            String correlationId, String summary, String payloadHash, String previousHash, OffsetDateTime recordedAt) {
+                            String correlationId, String summary, String payloadHash, String previousHash,
+                            String contentHash, String payloadDigest, OffsetDateTime recordedAt) {
         this.eventId = eventId;
         this.sequenceNo = sequenceNo;
         this.caseId = caseId;
@@ -47,6 +50,8 @@ public class AuditEventEntity {
         this.summary = summary;
         this.payloadHash = payloadHash;
         this.previousHash = previousHash;
+        this.contentHash = contentHash;
+        this.payloadDigest = payloadDigest;
         this.recordedAt = recordedAt;
     }
 
@@ -66,5 +71,7 @@ public class AuditEventEntity {
     public String getSummary() { return summary; }
     public String getPayloadHash() { return payloadHash; }
     public String getPreviousHash() { return previousHash; }
+    public String getContentHash() { return contentHash; }
+    public String getPayloadDigest() { return payloadDigest; }
     public OffsetDateTime getRecordedAt() { return recordedAt; }
 }
