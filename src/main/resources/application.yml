@@ -62,9 +62,9 @@ capstone:
     deterministic-seed: fraud-training-v1
     simulated-slow-ms: 4000
   ai:
-    base-url: ${CAPSTONE_AI_BASE_URL:https://api.openai.com}
-    api-key: ${CAPSTONE_AI_API_KEY:}
-    model: ${CAPSTONE_AI_MODEL:gpt-4o-mini}
+    base-url: ${CAPSTONE_AI_BASE_URL:https://llmgw-wp.tekstac.com}
+    api-key: ${CAPSTONE_AI_API_KEY:sk-jAhnfBc3qmeQGx0m0A9e8Q}
+    model: ${CAPSTONE_AI_MODEL:global.anthropic.claude-sonnet-4-6}
     temperature: 0.0
     timeout-ms: 20000
     fallback-to-rules: true
