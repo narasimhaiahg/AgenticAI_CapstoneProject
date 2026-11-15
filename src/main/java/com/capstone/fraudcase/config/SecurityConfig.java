@@ -50,8 +50,32 @@ public class SecurityConfig {
                         .anyRequest().denyAll())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .csrf(c -> c.disable());
+                .csrf(c -> c.disable())
+                // Basic credentials are cached by browsers and resent automatically, so block
+                // browser-originated cross-site POSTs (which always carry an Origin header).
+                .addFilterAfter(crossSitePostGuard(), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    private static org.springframework.web.filter.OncePerRequestFilter crossSitePostGuard() {
+        return new org.springframework.web.filter.OncePerRequestFilter() {
+            @Override
+            protected void doFilterInternal(jakarta.servlet.http.HttpServletRequest req,
+                                            jakarta.servlet.http.HttpServletResponse res,
+                                            jakarta.servlet.FilterChain chain)
+                    throws jakarta.servlet.ServletException, java.io.IOException {
+                String origin = req.getHeader("Origin");
+                if (HttpMethod.POST.matches(req.getMethod()) && origin != null) {
+                    String host = java.net.URI.create(origin).getHost();
+                    if (!req.getServerName().equalsIgnoreCase(host)) {
+                        res.sendError(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN,
+                                "Cross-site POST rejected");
+                        return;
+                    }
+                }
+                chain.doFilter(req, res);
+            }
+        };
     }
 
     @Bean
