@@ -36,19 +36,22 @@
         });
         var KEY = "fraudcase-intake-draft";
         var FIELDS = ["maskedCustomerRef","homeRegion","transactionRef","amount","currency","occurredAt","status",
-            "transactionChannel","maskedMerchant","issueType","customerStatement","cardPossession","intakeChannel"];
+            "transactionChannel","maskedMerchant","merchantRecognised","issueType","customerStatement","cardPossession","intakeChannel"];
         document.getElementById("save-draft").addEventListener("click", function () {
             var d = {};
-            FIELDS.forEach(function (id) { var el = document.getElementById(id); if (el) { d[id] = el.value; } });
+            FIELDS.forEach(function (id) { var el = document.getElementById(id); if (el) { d[id] = el.type === "checkbox" ? el.checked : el.value; } });
             localStorage.setItem(KEY, JSON.stringify(d));
             this.textContent = "Draft saved";
         });
         document.getElementById("restore-draft").addEventListener("click", function () {
             var d = JSON.parse(localStorage.getItem(KEY) || "null");
             if (!d) { this.textContent = "No draft saved"; return; }
-            FIELDS.forEach(function (id) { if (d[id]) { set(id, d[id]); } });
+            FIELDS.forEach(function (id) { if (d[id] !== undefined) { set(id, d[id]); } });
         });
-        function set(id, v) { var el = document.getElementById(id); if (el) { el.value = v; } }
+        function set(id, v) {
+            var el = document.getElementById(id);
+            if (el) { if (el.type === "checkbox") { el.checked = v === true; } else { el.value = v; } }
+        }
     }
 
     // Review screen: show route selector only when REROUTE is chosen.
